@@ -22,13 +22,15 @@ public class WorkController {
     private final SearchWorks searchWorks;
     private final GetWorkById getWorkById;
     private final UpdateWork updateWork;
+    private final DeleteWork deleteWork;
 
     public WorkController(CreateWork createWork, SearchWorks searchWorks,
-                          GetWorkById getWorkById, UpdateWork updateWork) {
+                          GetWorkById getWorkById, UpdateWork updateWork, DeleteWork deleteWork) {
         this.createWork = createWork;
         this.searchWorks = searchWorks;
         this.getWorkById = getWorkById;
         this.updateWork = updateWork;
+        this.deleteWork = deleteWork;
     }
 
     @GetMapping
@@ -65,4 +67,10 @@ public class WorkController {
         updateWork.handle(command);
     }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyRole('LIBRARIAN','ADMIN')")
+    public void delete(@PathVariable String id) {
+        deleteWork.handle(WorkId.of(id));
+    }
 }
