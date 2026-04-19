@@ -20,14 +20,23 @@ import java.util.List;
 public class PenaltyController {
 
     private final PenaltyRepository penaltyRepository;
+    private final ResolvePenalty resolvePenalty;
 
-    public PenaltyController(PenaltyRepository penaltyRepository) {
+    public PenaltyController(PenaltyRepository penaltyRepository, ResolvePenalty resolvePenalty) {
         this.penaltyRepository = penaltyRepository;
+        this.resolvePenalty = resolvePenalty;
     }
 
     @GetMapping("/my")
     public List<PenaltyResponse> myPenalties(@AuthenticationPrincipal UserDetails userDetails) {
         return penaltyRepository.findByUserId(UserId.of(userDetails.getUsername()))
                 .stream().map(PenaltyResponse::from).toList();
+    }
+
+    @PatchMapping("/{id}/resolve")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyRole('LIBRARIAN','ADMIN')")
+    public void resolve(@PathVariable String id) {
+        resolvePenalty.handle(PenaltyId.of(id));
     }
 }
