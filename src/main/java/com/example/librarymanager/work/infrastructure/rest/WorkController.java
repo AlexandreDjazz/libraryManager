@@ -21,12 +21,14 @@ public class WorkController {
     private final CreateWork createWork;
     private final SearchWorks searchWorks;
     private final GetWorkById getWorkById;
+    private final UpdateWork updateWork;
 
     public WorkController(CreateWork createWork, SearchWorks searchWorks,
-                          GetWorkById getWorkById) {
+                          GetWorkById getWorkById, UpdateWork updateWork) {
         this.createWork = createWork;
         this.searchWorks = searchWorks;
         this.getWorkById = getWorkById;
+        this.updateWork = updateWork;
     }
 
     @GetMapping
@@ -51,6 +53,16 @@ public class WorkController {
                 request.publisher(), request.year(), request.subjects(),
                 request.language(), request.description(), request.type());
         return createWork.handle(command).value();
+    }
+
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyRole('LIBRARIAN','ADMIN')")
+    public void update(@PathVariable String id, @Valid @RequestBody CreateWorkRequest request) {
+        var command = new UpdateWork.Command(WorkId.of(id), request.isbn(), request.title(),
+                request.authors(), request.publisher(), request.year(), request.subjects(),
+                request.language(), request.description(), request.type());
+        updateWork.handle(command);
     }
 
 }
