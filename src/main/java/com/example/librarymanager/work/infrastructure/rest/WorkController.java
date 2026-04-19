@@ -19,13 +19,29 @@ import java.util.List;
 public class WorkController {
 
     private final CreateWork createWork;
+    private final SearchWorks searchWorks;
+    private final GetWorkById getWorkById;
 
-    public WorkController(CreateWork createWork) {
+    public WorkController(CreateWork createWork, SearchWorks searchWorks,
+                          GetWorkById getWorkById) {
         this.createWork = createWork;
-
+        this.searchWorks = searchWorks;
+        this.getWorkById = getWorkById;
     }
 
+    @GetMapping
+    public List<WorkResponse> search(@RequestParam(required = false) String keyword,
+                                     @RequestParam(required = false) WorkType type,
+                                     @RequestParam(required = false) String language,
+                                     @RequestParam(required = false) Integer year) {
+        return searchWorks.handle(new SearchWorks.Query(keyword, type, language, year))
+                .stream().map(WorkResponse::from).toList();
+    }
 
+    @GetMapping("/{id}")
+    public WorkResponse getById(@PathVariable String id) {
+        return WorkResponse.from(getWorkById.handle(WorkId.of(id)));
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -36,6 +52,5 @@ public class WorkController {
                 request.language(), request.description(), request.type());
         return createWork.handle(command).value();
     }
-
 
 }
